@@ -1,0 +1,52 @@
+defaults:
+  - _self_
+  - agent: potil
+  - suite: dmc
+  - override hydra/launcher: submitit_local
+
+# Root Dir
+root_dir: '/home/mgdb/ws/TDCRP/ROT'
+
+# replay buffer
+replay_buffer_size: 150000
+replay_buffer_num_workers: 2
+nstep: 3
+batch_size: 64 # 128
+# misc
+seed: 2
+device: cuda
+save_video: true
+save_train_video: false
+use_tb: true
+
+max_horizen: 400
+
+# experiment
+obs_type: 'features' # pixels, features
+experiment: bc_${suite.name}_${obs_type}_${task}_seed_${seed}
+
+# expert dataset
+num_demos: 85 #50(openaigym), 10(dmc), 1(metaworld), 1(particle), 1(robotgym)
+expert_dataset: '${root_dir}/ROT/expert_demos/${suite.name}/${task}/expert_demos.pkl'
+
+# Load weights
+load_bc: false
+
+# Weights
+bc_weight: '${root_dir}/ROT/weights/${suite.name}_${obs_type}/${task}/bc.pt'
+
+# Train with BC loss
+bc_regularize: true
+bc_weight_type: 'linear' # linear, qfilter
+task: plug_charger_in_power_supply
+#unplug_charger, screw_nail, take_usb_out_of_computer, insert_usb_in_computer
+hydra:
+  run:
+    dir: ./exp_local/${now:%Y.%m.%d}/${now:%H%M%S}_${experiment}
+  sweep:
+    dir: ./exp_local/${now:%Y.%m.%d}/${now:%H%M%S}
+    subdir: ${hydra.job.num}
+  launcher:
+    tasks_per_node: 1
+    nodes: 1
+    submitit_folder: ./exp/${now:%Y.%m.%d}/${now:%H%M%S}_${experiment}/.slurm
