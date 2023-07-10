@@ -144,7 +144,7 @@ class Workspace:
 
 				obs_low_dim_state = np.concatenate(low_dim_data) if len(low_dim_data) > 0 else np.array([])
 				batch_state.append(obs_low_dim_state)
-			ground_truth_actions = [obs.joint_velocities for obs in batch]
+			ground_truth_actions = [np.hstack((obs.joint_velocities, obs.gripper_open)) for obs in batch]
 			rewards = [1.0 for _ in batch]
 			episode += 1
 
@@ -163,6 +163,7 @@ class Workspace:
 		actions_list_temp = list()
 		rewards_list_temp = list()
 
+		print(actions_list[-1].shape)
 		x = (int)(len(rewards_list)/batch_size)
 		for i in range(x):
 			rewards_list_temp.append(np.stack(rewards_list[i*batch_size:i*batch_size+batch_size], 0 ))
